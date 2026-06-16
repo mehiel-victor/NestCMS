@@ -88,6 +88,22 @@ curl -X POST http://localhost:8080/api/checkout \
 
 Public repository: https://github.com/mehiel-victor/NestCMS
 
+## CI/CD
+
+GitHub Actions deploys the Nuxt frontend in `frontend/` to Vercel.
+
+- Pull requests create preview deployments.
+- Pushes to `main` create production deployments.
+- The workflow uses Vercel CLI `54.9.1` with `vercel build` and `vercel deploy --prebuilt`.
+
+Required GitHub Actions secrets are already expected by `.github/workflows/vercel.yml`:
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+Set `NUXT_PUBLIC_API_BASE` in the Vercel project environment when the production API is hosted. Without that, the frontend falls back to `http://localhost:8080`.
+
 ## Notes
 
 Payment, shipping, fiscal, and email providers are intentionally stubbed in the MVP. The code is shaped so those integrations can be replaced by real adapters without changing the merchant UI.

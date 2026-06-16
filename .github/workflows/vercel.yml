@@ -1,0 +1,126 @@
+name: Deploy Frontend to Vercel
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  preview:
+    name: Preview Deployment
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Audit Dependencies
+        run: npm audit --omit=dev
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@54.9.1
+
+      - name: Pull Vercel Preview Environment
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Preview
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Preview
+        id: deploy
+        run: echo "url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})" >> "$GITHUB_OUTPUT"
+
+      - name: Comment Preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Vercel preview: ${{ steps.deploy.outputs.url }}`
+            })
+
+  production:
+    name: Production Deployment
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Audit Dependencies
+        run: npm audit --omit=dev
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@54.9.1
+
+      - name: Pull Vercel Production Environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Production
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Production
+        id: deploy
+        run: echo "url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})" >> "$GITHUB_OUTPUT"
+
+      - name: Deployment Summary
+        run: |
+          {
+            echo "## Vercel Production Deployment"
+            echo ""
+            echo "- URL: ${{ steps.deploy.outputs.url }}"
+            echo "- Commit: ${{ github.sha }}"
+            echo "- Target: production"
+          } >> "$GITHUB_STEP_SUMMARY"

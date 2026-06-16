@@ -8,4 +8,4 @@ dist/
 vendor/
 coverage/
 postgres-data/
-
+.vercel/
