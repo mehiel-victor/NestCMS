@@ -58,6 +58,8 @@ jobs:
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Preview
+        env:
+          NITRO_PRESET: vercel
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Preview
@@ -109,6 +111,8 @@ jobs:
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Production
+        env:
+          NITRO_PRESET: vercel
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Production
