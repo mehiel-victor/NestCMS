@@ -19,6 +19,8 @@ NestCMS is an open-source MVP for a DTC e-commerce CMS. It gives a founder like 
 
 ## Run Locally
 
+Docker is required for the full stack because PostgreSQL is provisioned by Compose.
+
 ```bash
 cp .env.example .env
 docker compose up --build
@@ -82,18 +84,10 @@ curl -X POST http://localhost:8080/api/checkout \
   }'
 ```
 
-## Publish To GitHub
+## GitHub
 
-When the GitHub CLI is available, publish as a public repository:
-
-```bash
-git init
-git add .
-git commit -m "Build NestCMS MVP"
-gh repo create nikoliveira/NestCMS --public --source=. --remote=origin --push
-```
+Public repository: https://github.com/mehiel-victor/NestCMS
 
 ## Notes
 
 Payment, shipping, fiscal, and email providers are intentionally stubbed in the MVP. The code is shaped so those integrations can be replaced by real adapters without changing the merchant UI.
-

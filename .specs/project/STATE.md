@@ -6,11 +6,11 @@
 - Use PostgreSQL migrations and seed data in `backend/database`.
 - Treat payment, shipping, fiscal, and email providers as integration stubs in the MVP.
 - Use Chakra UI Vue through `@chakra-ui/vue-next`, currently documented as Vue 3 support, with SCSS for domain-specific layout polish.
+- Publish the MVP to the public GitHub repository `mehiel-victor/NestCMS`, because the local GitHub CLI is authenticated as `mehiel-victor`.
 
 ## Blockers
 
-- Local shell execution is currently unavailable in this Codex session, so automated installs, tests, `git`, and `gh` commands may need a later retry or user-side execution.
-- GitHub connector exposes repository file operations but not repository creation, so creating a brand-new public GitHub repository requires `gh`, GitHub web UI, or an additional repository-creation tool.
+- Docker is not installed on this machine, so `docker compose up --build` could not be executed locally in this session.
 
 ## Deferred Ideas
 
@@ -22,4 +22,3 @@
 ## Preferences
 
 - Keep implementation docs and commands in Portuguese-friendly wording for the user.
-
