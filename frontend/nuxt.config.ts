@@ -1,6 +1,8 @@
 export default defineNuxtConfig({
-  ssr: false,
   devtools: { enabled: true },
+  experimental: {
+    appManifest: false
+  },
   css: ['~/assets/scss/main.scss'],
   runtimeConfig: {
     public: {
@@ -24,4 +26,3 @@ export default defineNuxtConfig({
     }
   }
 })
-
