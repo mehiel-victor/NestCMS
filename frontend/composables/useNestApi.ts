@@ -104,6 +104,14 @@ export function useNestApi() {
 
   return {
     health: () => request<{ status: string; service: string }>('/health'),
+    login: async (email: string, password: string) => {
+      const response = await request<SessionPayload>('/api/auth/login', {
+        method: 'POST',
+        body: { email, password }
+      }, false)
+      setSession(response)
+      return response
+    },
     requestMagicLink: async (email: string) => request<{ message: string }>('/api/auth/magic/request', {
       method: 'POST',
       body: { email }

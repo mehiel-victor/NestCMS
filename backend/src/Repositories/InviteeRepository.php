@@ -16,7 +16,7 @@ final class InviteeRepository
     {
         $statement = $this->pdo->prepare(
             <<<'SQL'
-            SELECT id, email, role, status, created_at, updated_at
+            SELECT id, email, password_hash, role, status, created_at, updated_at
             FROM auth_invitees
             WHERE lower(email) = :email
               AND status = 'active'
@@ -37,4 +37,3 @@ final class InviteeRepository
         return $invitee;
     }
 }
-

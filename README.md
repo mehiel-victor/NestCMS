@@ -31,6 +31,14 @@ Then open:
 - Frontend: http://localhost:3000
 - Backend health: http://localhost:8080/health
 
+Seeded access credentials:
+
+| Perfil | E-mail | Senha |
+| --- | --- | --- |
+| Admin | `admin@nestcms.test` | `Admin@123` |
+| Operador | `operator@nestcms.test` | `Operator@123` |
+| Financeiro | `finance@nestcms.test` | `Finance@123` |
+
 PostgreSQL is seeded automatically on the first run. If you need a clean database:
 
 ```bash

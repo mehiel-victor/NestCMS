@@ -146,6 +146,17 @@ try {
         ));
     }
 
+    if ($method === 'POST' && $path === '/api/auth/login') {
+        $body = readJsonBody();
+        Response::json($authService->loginWithPassword(
+            (string) ($body['email'] ?? ''),
+            (string) ($body['password'] ?? ''),
+            $requestIp,
+            $requestUserAgent,
+            $path
+        ));
+    }
+
     if ($method === 'GET' && $path === '/api/auth/magic/callback') {
         $token = (string) ($_GET['token'] ?? '');
         Response::json($authService->consumeMagicLink($token, $requestIp, $requestUserAgent, $path));
