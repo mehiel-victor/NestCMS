@@ -4,6 +4,10 @@ import { CButton } from '@chakra-ui/c-button'
 import { CInput } from '@chakra-ui/c-input'
 import type { Product, Variant } from '~/types'
 
+type CheckoutResult = Record<string, unknown> & {
+  payment_instructions?: string | { instructions?: string; reference?: string } | null
+}
+
 definePageMeta({
   requiresAuth: false
 })
@@ -15,7 +19,7 @@ const products = ref<Product[]>([])
 const loading = ref(true)
 const placing = ref(false)
 const error = ref('')
-const result = ref<Record<string, unknown> | null>(null)
+const result = ref<CheckoutResult | null>(null)
 
 const form = reactive({
   name: 'Ana Costa',
@@ -44,6 +48,20 @@ const totalPreview = computed(() => {
   const discount = form.coupon_code === 'WELCOME10' ? subtotal * 0.1 : 0
   const shipping = form.shipping_method === 'express' ? 29.9 : form.shipping_method === 'pickup' ? 0 : 18.9
   return Math.max(0, subtotal - discount + shipping)
+})
+
+const paymentInstructions = computed(() => {
+  const instructions = result.value?.payment_instructions
+
+  if (!instructions) {
+    return ''
+  }
+
+  if (typeof instructions === 'string') {
+    return instructions
+  }
+
+  return instructions.instructions ?? instructions.reference ?? ''
 })
 
 const load = async () => {
@@ -222,8 +240,8 @@ onMounted(load)
             <span>Pagamento</span>
             <strong>{{ result.payment_method }}</strong>
           </div>
-          <div v-if="result.payment_instructions" class="metric-note">
-            {{ typeof result.payment_instructions === 'string' ? result.payment_instructions : result.payment_instructions.instructions || result.payment_instructions.reference }}
+          <div v-if="paymentInstructions" class="metric-note">
+            {{ paymentInstructions }}
           </div>
         </div>
         <div v-else class="notice">Aguardando pedido.</div>
