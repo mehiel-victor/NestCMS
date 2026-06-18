@@ -27,6 +27,86 @@ final class AuthService
     ) {
     }
 
+    public function loginWithPassword(string $email, string $password, string $ipAddress, string $userAgent, string $path): array
+    {
+        $normalizedEmail = $this->normalizeEmail($email);
+        if ($normalizedEmail === '' || trim($password) === '') {
+            $this->audit->record([
+                'event_type' => 'password_login',
+                'outcome' => 'denied',
+                'ip_address' => $ipAddress,
+                'user_agent' => $userAgent,
+                'request_path' => $path,
+                'request_method' => 'POST',
+                'details' => ['reason' => 'invalid_credentials'],
+            ]);
+
+            throw new AuthException('E-mail ou senha invalidos.', 401);
+        }
+
+        $window = max(1, $this->envInt('AUTH_LOGIN_RATE_LIMIT_WINDOW_SECONDS', 60));
+        $maxIp = max(1, $this->envInt('AUTH_LOGIN_RATE_LIMIT_MAX_PER_IP', 10));
+        $maxEmail = max(1, $this->envInt('AUTH_LOGIN_RATE_LIMIT_MAX_PER_EMAIL', 5));
+
+        $ipAllowed = $this->rateLimits->isAllowed("password_login:ip:{$ipAddress}", $window, $maxIp);
+        $emailAllowed = $this->rateLimits->isAllowed("password_login:email:{$normalizedEmail}", $window, $maxEmail);
+
+        if (!$ipAllowed || !$emailAllowed) {
+            $this->audit->record([
+                'event_type' => 'password_login',
+                'outcome' => 'denied',
+                'ip_address' => $ipAddress,
+                'user_agent' => $userAgent,
+                'request_path' => $path,
+                'request_method' => 'POST',
+                'details' => ['reason' => 'rate_limit', 'email' => $normalizedEmail],
+            ]);
+
+            throw new AuthException('Muitas tentativas de acesso. Aguarde um minuto e tente novamente.', 429);
+        }
+
+        $invitee = $this->invitees->findActiveByEmail($normalizedEmail);
+        $passwordHash = is_array($invitee) ? (string) ($invitee['password_hash'] ?? '') : '';
+
+        if ($invitee === null || $passwordHash === '' || !password_verify($password, $passwordHash)) {
+            $this->audit->record([
+                'invitee_id' => is_array($invitee) ? (int) $invitee['id'] : null,
+                'event_type' => 'password_login',
+                'outcome' => 'denied',
+                'ip_address' => $ipAddress,
+                'user_agent' => $userAgent,
+                'request_path' => $path,
+                'request_method' => 'POST',
+                'details' => ['reason' => 'invalid_credentials', 'email' => $normalizedEmail],
+            ]);
+
+            throw new AuthException('E-mail ou senha invalidos.', 401);
+        }
+
+        $session = $this->createSession(
+            (int) $invitee['id'],
+            (string) $invitee['role'],
+            $ipAddress,
+            $userAgent,
+            $path,
+            'POST'
+        );
+
+        $this->audit->record([
+            'invitee_id' => (int) $invitee['id'],
+            'session_id' => (int) $session['id'],
+            'event_type' => 'password_login',
+            'outcome' => 'allowed',
+            'ip_address' => $ipAddress,
+            'user_agent' => $userAgent,
+            'request_path' => $path,
+            'request_method' => 'POST',
+            'details' => ['session_id' => $session['id'], 'role' => $invitee['role']],
+        ]);
+
+        return $this->sessionPayload($session, $invitee);
+    }
+
     public function requestMagicLink(string $email, string $ipAddress, string $userAgent, string $path): array
     {
         $normalizedEmail = $this->normalizeEmail($email);
@@ -421,7 +501,7 @@ final class AuthService
         return $session;
     }
 
-    private function createSession(int $inviteeId, string $role, string $ipAddress, string $userAgent, string $path): array
+    private function createSession(int $inviteeId, string $role, string $ipAddress, string $userAgent, string $path, string $method = 'GET'): array
     {
         if (!in_array($role, self::ALLOWED_ROLES, true)) {
             throw new InvalidArgumentException('Invalid role.');
@@ -455,11 +535,27 @@ final class AuthService
             'ip_address' => $ipAddress,
             'user_agent' => $userAgent,
             'request_path' => $path,
-            'request_method' => 'GET',
+            'request_method' => $method,
             'details' => ['session_id' => $session['session_id']],
         ]);
 
         return $session;
+    }
+
+    private function sessionPayload(array $session, array $invitee): array
+    {
+        return [
+            'access_token' => $session['access_token_raw'],
+            'refresh_token' => $session['refresh_token_raw'],
+            'user' => [
+                'id' => (int) $invitee['id'],
+                'email' => (string) $invitee['email'],
+                'role' => (string) $invitee['role'],
+            ],
+            'access_expires_at' => (string) $session['access_expires_at'],
+            'refresh_expires_at' => (string) $session['refresh_expires_at'],
+            'session_id' => (string) $session['session_id'],
+        ];
     }
 
     private function revokeSession(int $sessionId, string $reason, string $path, string $method, string $ipAddress, string $userAgent, ?int $inviteeId = null): void

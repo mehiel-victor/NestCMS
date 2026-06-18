@@ -1,6 +1,7 @@
 CREATE TABLE auth_invitees (
     id BIGSERIAL PRIMARY KEY,
     email VARCHAR(220) NOT NULL UNIQUE,
+    password_hash VARCHAR(255),
     role VARCHAR(40) NOT NULL CHECK (role IN ('admin', 'operator', 'finance')),
     status VARCHAR(40) NOT NULL DEFAULT 'invited' CHECK (status IN ('invited', 'active', 'revoked')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
