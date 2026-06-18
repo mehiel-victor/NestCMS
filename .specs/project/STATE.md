@@ -10,6 +10,7 @@
 - Introduce a real payments milestone with an internal `PaymentProvider` abstraction before direct frontend-gateway integration.
 - Persist immutable payment audit artifacts (`provider_status`, `provider_event_id`, `webhook_payload`, correlation metadata) on every webhook/payment mutation.
 - Preserve `/api/orders` response contract as the stable frontend integration surface.
+- Added issue-1 execution branch support for multiple provider adapters (`mock`, `stripe`, `mercado_pago`, `pagar_me`) with deterministic fallback configuration through `PAYMENT_PROVIDER` and `PAYMENT_PROVIDER_FALLBACK`.
 
 ## Blockers
 

@@ -83,11 +83,22 @@ final class PaymentService
         return $this->mergeTransactionContext($transaction, $orderId, $charge);
     }
 
-    public function handleWebhook(string $providerName, array $payload, string $rawPayload, string $signature): array
+    public function handleWebhook(
+        string $providerName,
+        array $payload,
+        string $rawPayload,
+        string $signature,
+        ?string $requestId = null
+    ): array
     {
-        $webhookProvider = $this->providerRegistry->forName($providerName);
+        $requestTraceId = is_string($requestId) ? $requestId : null;
+        $webhookProvider = $this->providerRegistry->forName($providerName, false);
 
         if (!$webhookProvider->verifyWebhookSignature($rawPayload, $signature)) {
+            $this->logWebhookEvent('invalid_signature', [
+                'provider' => $providerName,
+                'request_id' => $requestTraceId,
+            ]);
             throw new InvalidArgumentException('Invalid webhook signature.');
         }
 
@@ -102,6 +113,12 @@ final class PaymentService
         }
 
         if ($this->events->hasProviderEvent($providerName, $providerEventId)) {
+            $this->logWebhookEvent('duplicate_event', [
+                'provider' => $providerName,
+                'provider_event_id' => $providerEventId,
+                'request_id' => $requestTraceId,
+            ]);
+
             return [
                 'status' => 'duplicate',
                 'order_id' => $transaction['order_id'],
@@ -116,6 +133,11 @@ final class PaymentService
             ));
         } catch (PDOException $exception) {
             if ($this->isDuplicateEventError($exception)) {
+                $this->logWebhookEvent('duplicate_event_db', [
+                    'provider' => $providerName,
+                    'provider_event_id' => $providerEventId,
+                    'request_id' => $requestTraceId,
+                ]);
                 return [
                     'status' => 'duplicate',
                     'order_id' => $transaction['order_id'],
@@ -127,6 +149,15 @@ final class PaymentService
 
         $nextPaymentStatus = $this->translateProviderStatus($providerStatus);
         $updated = $this->transactions->setStatuses((int) $transaction['id'], $providerStatus, $nextPaymentStatus);
+
+        $this->logWebhookEvent('processed', [
+            'provider' => $providerName,
+            'provider_event_id' => $providerEventId,
+            'request_id' => $requestTraceId,
+            'order_id' => $transaction['order_id'],
+            'previous_status' => $transaction['payment_status'],
+            'next_status' => $nextPaymentStatus,
+        ]);
 
         $this->orders->updatePaymentState(
             (int) $transaction['order_id'],
@@ -297,5 +328,22 @@ final class PaymentService
     {
         return $exception->getCode() === '23505'
             || str_contains((string) $exception->getMessage(), 'payment_events_provider_event_id_key');
+    }
+
+    private function logWebhookEvent(string $event, array $payload): void
+    {
+        error_log(
+            json_encode([
+                'event' => $event,
+                'component' => 'payment_webhook',
+                'provider' => $payload['provider'] ?? null,
+                'provider_event_id' => $payload['provider_event_id'] ?? null,
+                'order_id' => $payload['order_id'] ?? null,
+                'request_id' => $payload['request_id'] ?? null,
+                'previous_status' => $payload['previous_status'] ?? null,
+                'next_status' => $payload['next_status'] ?? null,
+                'created_at' => gmdate('c'),
+            ], JSON_THROW_ON_ERROR)
+        );
     }
 }

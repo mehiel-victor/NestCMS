@@ -15,11 +15,14 @@ Backend remains the single source of truth for commerce and orchestration. Front
   - applies idempotency keys and correlation IDs.
 - `src/Services/PaymentProviderRegistry.php`:
   - resolves default/fallback provider by configuration.
+  - accepts non-webhook fallback for internal charge creation when a primary is temporarily unavailable.
 - `src/Payments/PaymentProviderInterface.php`:
   - operations: `createCharge`, `fetchStatus`, `createRefund`, `verifyWebhookSignature`.
 - `src/Payments/Adapters/*`:
   - provider-specific implementations;
   - adapters for development/test providers to keep local execution deterministic.
+- `src/Payments/Adapters/MercadoPagoPaymentProvider.php`, `src/Payments/Adapters/PagarMePaymentProvider.php`,
+  `src/Payments/Adapters/StripePaymentProvider.php`: provider-specific stubs ready for real SDK injection.
 - `src/Repositories/PaymentTransactionRepository.php`: persistent transaction and status timeline.
 - `src/Repositories/PaymentEventRepository.php`: immutable webhook/event trail.
 - `src/Repositories/PaymentRefundRepository.php`: partial/full refund records.
