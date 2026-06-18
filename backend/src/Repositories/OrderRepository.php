@@ -60,6 +60,56 @@ final class OrderRepository
         return $this->castOrder($order);
     }
 
+    public function findById(int $orderId): ?array
+    {
+        $statement = $this->pdo->prepare('SELECT * FROM orders WHERE id = :id');
+        $statement->execute(['id' => $orderId]);
+        $order = $statement->fetch();
+
+        if (!$order) {
+            return null;
+        }
+
+        $order['items'] = '[]';
+        return $this->castOrder($order);
+    }
+
+    public function updatePaymentState(
+        int $orderId,
+        ?string $paymentStatus,
+        ?string $provider,
+        ?string $providerStatus,
+        ?int $paymentTransactionId,
+        ?string $lastError = null
+    ): array {
+        $statement = $this->pdo->prepare(
+            <<<'SQL'
+            UPDATE orders
+            SET payment_status = COALESCE(:payment_status, payment_status),
+                payment_provider = COALESCE(:payment_provider, payment_provider),
+                payment_provider_status = COALESCE(:payment_provider_status, payment_provider_status),
+                payment_transaction_id = COALESCE(:payment_transaction_id, payment_transaction_id)
+            WHERE id = :id
+            RETURNING *
+            SQL
+        );
+        $statement->execute([
+            'payment_status' => $paymentStatus,
+            'payment_provider' => $provider,
+            'payment_provider_status' => $providerStatus,
+            'payment_transaction_id' => $paymentTransactionId,
+            'id' => $orderId,
+        ]);
+
+        $order = $statement->fetch();
+        if (!$order) {
+            throw new InvalidArgumentException('Order not found.');
+        }
+
+        $order['items'] = '[]';
+        return $this->castOrder($order);
+    }
+
     public function todayOrderCount(): int
     {
         return (int) $this->pdo
@@ -100,6 +150,10 @@ final class OrderRepository
         $order['shipping_total'] = (float) $order['shipping_total'];
         $order['total'] = (float) $order['total'];
         $order['metadata'] = json_decode((string) $order['metadata'], true) ?: [];
+        $order['payment_status'] = $order['payment_status'];
+        $order['payment_provider'] = $order['payment_provider'];
+        $order['payment_provider_status'] = $order['payment_provider_status'];
+        $order['payment_transaction_id'] = $order['payment_transaction_id'] !== null ? (int) $order['payment_transaction_id'] : null;
         $order['items'] = array_map(function (array $item): array {
             $item['id'] = (int) $item['id'];
             $item['variant_id'] = $item['variant_id'] !== null ? (int) $item['variant_id'] : null;
@@ -113,4 +167,3 @@ final class OrderRepository
         return $order;
     }
 }
-
