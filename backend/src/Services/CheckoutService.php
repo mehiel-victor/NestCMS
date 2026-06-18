@@ -18,7 +18,8 @@ final class CheckoutService
         private readonly PDO $pdo,
         private readonly CatalogRepository $catalog,
         private readonly InventoryRepository $inventory,
-        private readonly OrderRepository $orders
+        private readonly OrderRepository $orders,
+        private readonly PaymentService $payments
     ) {
     }
 
@@ -40,6 +41,18 @@ final class CheckoutService
         $paymentMethod = (string) ($payload['payment_method'] ?? 'pix');
         if (!in_array($paymentMethod, self::PAYMENT_METHODS, true)) {
             throw new InvalidArgumentException('Unsupported payment method.');
+        }
+
+        $idempotencyKey = $this->payments->composeIdempotencyKey($payload, $email);
+        $existingTransaction = $this->payments->getTransactionByIdempotency($idempotencyKey);
+        if ($existingTransaction !== null && (int) $existingTransaction['order_id'] > 0) {
+            $existingOrder = $this->orders->findById((int) $existingTransaction['order_id']);
+            if ($existingOrder !== null) {
+                return $this->formatCheckoutResponse(
+                    $existingOrder,
+                    array_merge($existingTransaction, ['idempotency_key' => $idempotencyKey])
+                );
+            }
         }
 
         $variantIds = array_map(fn (array $item): int => (int) ($item['variant_id'] ?? 0), $items);
@@ -99,25 +112,25 @@ final class CheckoutService
                 RETURNING id
                 SQL
             );
-            $orderStatement->execute([
-                'customer_id' => $customerId,
-                'email' => $email,
-                'customer_name' => $name,
-                'payment_method' => $paymentMethod,
-                'shipping_method' => (string) ($payload['shipping_method'] ?? 'standard'),
+                $orderStatement->execute([
+                    'customer_id' => $customerId,
+                    'email' => $email,
+                    'customer_name' => $name,
+                    'payment_method' => $paymentMethod,
+                    'shipping_method' => (string) ($payload['shipping_method'] ?? 'standard'),
                 'coupon_code' => $coupon['code'] ?? null,
                 'subtotal' => $subtotal,
                 'discount_total' => $discountTotal,
                 'shipping_total' => $shippingTotal,
                 'total' => $total,
                 'utm_source' => $payload['utm_source'] ?? null,
-                'metadata' => json_encode([
-                    'create_account_after_purchase' => (bool) ($payload['create_account'] ?? false),
-                    'upsell_ids' => $payload['upsell_ids'] ?? [],
-                    'cross_sell_ids' => $payload['cross_sell_ids'] ?? [],
-                    'payment_simulated' => true,
-                ], JSON_THROW_ON_ERROR),
-            ]);
+                    'metadata' => json_encode([
+                        'create_account_after_purchase' => (bool) ($payload['create_account'] ?? false),
+                        'upsell_ids' => $payload['upsell_ids'] ?? [],
+                        'cross_sell_ids' => $payload['cross_sell_ids'] ?? [],
+                        'payment_simulated' => true,
+                    ], JSON_THROW_ON_ERROR),
+                ]);
 
             $orderId = (int) $orderStatement->fetchColumn();
 
@@ -144,28 +157,73 @@ final class CheckoutService
 
             $this->recordTrafficCheckout((string) ($payload['utm_source'] ?? 'direct'), $total);
             $this->markRecoverableCartConverted($email);
+            $payment = $this->payments->createTransaction(
+                $orderId,
+                $total,
+                'BRL',
+                $paymentMethod,
+                $idempotencyKey,
+                ['customer_email' => $email, 'customer_name' => $name]
+            );
 
             $this->pdo->commit();
 
-            return [
-                'order_id' => $orderId,
-                'status' => 'received',
-                'subtotal' => $subtotal,
-                'discount_total' => $discountTotal,
-                'shipping_total' => $shippingTotal,
-                'total' => $total,
-                'payment_method' => $paymentMethod,
-                'items' => array_map(fn (array $item): array => [
-                    'sku' => $item['variant']['sku'],
-                    'product_title' => $item['variant']['product_title'],
-                    'quantity' => $item['quantity'],
-                    'total' => $item['total'],
-                ], $orderItems),
-            ];
+            return $this->formatCheckoutResponse(
+                [
+                    'id' => $orderId,
+                    'status' => 'received',
+                    'subtotal' => $subtotal,
+                    'discount_total' => $discountTotal,
+                    'shipping_total' => $shippingTotal,
+                    'total' => $total,
+                    'payment_method' => $paymentMethod,
+                ],
+                array_merge($payment, [
+                    'idempotency_key' => $idempotencyKey,
+                    'items' => array_map(fn (array $item): array => [
+                        'sku' => $item['variant']['sku'],
+                        'product_title' => $item['variant']['product_title'],
+                        'quantity' => $item['quantity'],
+                        'total' => $item['total'],
+                    ], $orderItems),
+                ])
+            );
         } catch (\Throwable $exception) {
             $this->pdo->rollBack();
             throw $exception;
         }
+    }
+
+    private function formatCheckoutResponse(array $order, array $payment): array
+    {
+        $resultPayload = $payment['result_payload'] ?? [];
+        $instructions = $payment['instructions'] ?? $resultPayload['instructions'] ?? null;
+        $reference = $payment['payment_reference'] ?? $resultPayload['payment_reference'] ?? null;
+
+        return [
+            'order_id' => (int) $order['id'],
+            'status' => (string) $order['status'],
+            'subtotal' => (float) $order['subtotal'],
+            'discount_total' => (float) $order['discount_total'],
+            'shipping_total' => (float) $order['shipping_total'],
+            'total' => (float) $order['total'],
+            'payment_method' => (string) $order['payment_method'],
+            'items' => array_map(fn (array $item): array => [
+                'sku' => $item['sku'] ?? '',
+                'product_title' => $item['product_title'] ?? '',
+                'quantity' => (int) $item['quantity'],
+                'total' => (float) $item['total'],
+            ], $order['items'] ?? []),
+            'payment_status' => (string) ($payment['payment_status'] ?? 'pending'),
+            'provider_status' => (string) ($payment['provider_status'] ?? ''),
+            'provider' => (string) ($payment['provider'] ?? ''),
+            'payment_provider' => (string) ($payment['provider'] ?? ''),
+            'payment_provider_status' => (string) ($payment['provider_status'] ?? ''),
+            'provider_transaction_id' => (string) ($payment['provider_transaction_id'] ?? ''),
+            'payment_reference' => (string) $reference,
+            'payment_instructions' => $instructions,
+            'idempotency_key' => (string) ($payment['idempotency_key'] ?? ''),
+        ];
     }
 
     private function coupon(string $code): ?array
@@ -268,4 +326,3 @@ final class CheckoutService
         $statement->execute(['email' => $email]);
     }
 }
-

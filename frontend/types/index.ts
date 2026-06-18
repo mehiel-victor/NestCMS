@@ -1,5 +1,22 @@
 export type Money = number
 
+export type UserRole = 'admin' | 'operator' | 'finance'
+
+export interface AuthUser {
+  id: number
+  email: string
+  role: UserRole
+}
+
+export interface SessionPayload {
+  user: AuthUser
+  access_token: string
+  refresh_token: string
+  access_expires_at: string
+  refresh_expires_at: string
+  session_id: string
+}
+
 export interface Variant {
   id: number
   product_id?: number
@@ -47,6 +64,10 @@ export interface Order {
   status: 'received' | 'processing' | 'shipped' | 'delivered' | 'returned'
   payment_method: string
   shipping_method: string
+  payment_status?: 'pending' | 'processing' | 'approved' | 'failed' | 'partially_refunded' | 'refunded' | 'chargeback' | null
+  payment_provider?: string | null
+  payment_provider_status?: string | null
+  payment_transaction_id?: number | null
   subtotal: Money
   discount_total: Money
   shipping_total: Money
@@ -92,4 +113,3 @@ export interface AbandonedCart {
   last_recovery_sent_at?: string | null
   items: Array<{ id: number; product_title: string; sku: string; quantity: number; unit_price: Money }>
 }
-

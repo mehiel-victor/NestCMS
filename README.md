@@ -107,3 +107,8 @@ Set `NUXT_PUBLIC_API_BASE` in the Vercel project environment when the production
 ## Notes
 
 Payment, shipping, fiscal, and email providers are intentionally stubbed in the MVP. The code is shaped so those integrations can be replaced by real adapters without changing the merchant UI.
+
+Additional planning material:
+
+- [Discovery de Novas Integracoes](docs/discovery-novas-integracoes.md)
+- [Posicionamento de Competencias Complementares](docs/posicionamento-competencias-complementares.md)

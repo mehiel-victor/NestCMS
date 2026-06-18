@@ -4,6 +4,14 @@ import { CButton } from '@chakra-ui/c-button'
 import { CInput } from '@chakra-ui/c-input'
 import type { Product, Variant } from '~/types'
 
+type CheckoutResult = Record<string, unknown> & {
+  payment_instructions?: string | { instructions?: string; reference?: string } | null
+}
+
+definePageMeta({
+  requiresAuth: false
+})
+
 const api = useNestApi()
 const { currency } = useFormatters()
 
@@ -11,7 +19,7 @@ const products = ref<Product[]>([])
 const loading = ref(true)
 const placing = ref(false)
 const error = ref('')
-const result = ref<Record<string, unknown> | null>(null)
+const result = ref<CheckoutResult | null>(null)
 
 const form = reactive({
   name: 'Ana Costa',
@@ -42,12 +50,26 @@ const totalPreview = computed(() => {
   return Math.max(0, subtotal - discount + shipping)
 })
 
+const paymentInstructions = computed(() => {
+  const instructions = result.value?.payment_instructions
+
+  if (!instructions) {
+    return ''
+  }
+
+  if (typeof instructions === 'string') {
+    return instructions
+  }
+
+  return instructions.instructions ?? instructions.reference ?? ''
+})
+
 const load = async () => {
   loading.value = true
   error.value = ''
 
   try {
-    products.value = await api.products()
+    products.value = await api.publicProducts()
     if (variants.value[0]) {
       form.variant_id = variants.value[0].id
     }
@@ -203,12 +225,23 @@ onMounted(load)
             <span class="status">{{ result.status }}</span>
           </div>
           <div class="metric-row">
+            <span>Pagamento</span>
+            <strong>{{ result.payment_status || 'pendente' }}</strong>
+          </div>
+          <div class="metric-row">
+            <span>Provedor</span>
+            <strong>{{ result.provider || 'mock' }}</strong>
+          </div>
+          <div class="metric-row">
             <span>Total</span>
             <strong>{{ currency(Number(result.total)) }}</strong>
           </div>
           <div class="metric-row">
             <span>Pagamento</span>
             <strong>{{ result.payment_method }}</strong>
+          </div>
+          <div v-if="paymentInstructions" class="metric-note">
+            {{ paymentInstructions }}
           </div>
         </div>
         <div v-else class="notice">Aguardando pedido.</div>
