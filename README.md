@@ -118,6 +118,8 @@ Required GitHub Actions secrets are already expected by `.github/workflows/verce
 
 Set `NUXT_PUBLIC_API_BASE` in the Vercel project environment when the production API is hosted. Without that, the frontend falls back to `http://localhost:8080`.
 
+When the published frontend is opened from a public host and `NUXT_PUBLIC_API_BASE` is still the localhost fallback, NestCMS runs in frontend demo mode. Demo mode accepts the seeded credentials above and serves in-browser sample data so the Vercel deployment can be reviewed without a hosted backend API. Local development on `localhost` still calls the real API.
+
 ## Notes
 
 Payment, shipping, fiscal, and email providers remain pluggable in the MVP. The default payment provider is still mocked for local development, but Stripe/Mercado Pago/Pagar.me adapters are now available for staged rollout without changing checkout/dashboard UX.
