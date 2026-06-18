@@ -80,8 +80,13 @@ try {
     $paymentEventRepository = new PaymentEventRepository($pdo);
     $paymentRefundRepository = new PaymentRefundRepository($pdo);
     $paymentReviewRepository = new ManualPaymentReviewRepository($pdo);
-    $providerRegistry = new PaymentProviderRegistry((string) getenv('PAYMENT_PROVIDER') ?: 'mock');
-    $provider = $providerRegistry->forName((string) getenv('PAYMENT_PROVIDER') ?: 'mock');
+    $primaryProvider = (string) getenv('PAYMENT_PROVIDER') ?: 'mock';
+    $fallbackProviders = (string) getenv('PAYMENT_PROVIDER_FALLBACK');
+    $providerRegistry = new PaymentProviderRegistry(
+        $primaryProvider,
+        $fallbackProviders !== '' ? array_map('trim', explode(',', $fallbackProviders)) : ['mock']
+    );
+    $provider = $providerRegistry->forName($primaryProvider);
     $paymentService = new PaymentService(
         $paymentTransactionRepository,
         $paymentEventRepository,
@@ -252,7 +257,8 @@ try {
             $providerName,
             is_array($payload) ? $payload : [],
             $rawBody,
-            webhookSignatureFromServer($_SERVER)
+            webhookSignatureFromServer($_SERVER),
+            webhookRequestIdFromServer($_SERVER)
         )]);
     }
 
@@ -339,4 +345,20 @@ function webhookSignatureFromServer(array $server): string
     }
 
     return '';
+}
+
+function webhookRequestIdFromServer(array $server): string
+{
+    $candidateHeaders = [
+        'HTTP_X_REQUEST_ID',
+        'HTTP_X_CORRELATION_ID',
+    ];
+
+    foreach ($candidateHeaders as $header) {
+        if (isset($server[$header]) && is_string($server[$header]) && trim($server[$header]) !== '') {
+            return trim($server[$header]);
+        }
+    }
+
+    return bin2hex(random_bytes(8));
 }

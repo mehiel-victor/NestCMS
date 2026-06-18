@@ -12,7 +12,7 @@ NestCMS is an open-source MVP for a DTC e-commerce CMS. It gives a founder like 
 
 - Product catalog with variants, media metadata, categories, collections, custom fields, and visibility.
 - Inventory by SKU and warehouse with low-stock alerts and movement history.
-- Guest checkout with simulated payment methods, coupons, shipping, upsell/cross-sell metadata, and stock decrement.
+- Guest checkout with provider-backed payment orchestration (PIX/card/boleto), coupons, shipping, upsell/cross-sell metadata, and stock decrement.
 - Order dashboard with status updates.
 - Abandoned cart recovery queue and simulated email events.
 - Revenue, funnel, best-seller, margin, LTV, and UTM analytics.
@@ -48,6 +48,12 @@ curl http://localhost:8080/api/orders
 curl http://localhost:8080/api/marketing/abandoned-carts
 curl http://localhost:8080/api/analytics/revenue
 ```
+
+Payment gateway behavior is driven by `.env`:
+
+- `PAYMENT_PROVIDER`: active provider alias (`mock`, `stripe`, `mercado_pago`, `pagar_me`).
+- `PAYMENT_PROVIDER_FALLBACK`: ordered fallback providers for non-webhook operations.
+- `STRIPE_WEBHOOK_SECRET`, `MERCADO_PAGO_WEBHOOK_SECRET`, `PAGARME_WEBHOOK_SECRET`: optional webhook secrets.
 
 Create a product:
 
@@ -106,7 +112,7 @@ Set `NUXT_PUBLIC_API_BASE` in the Vercel project environment when the production
 
 ## Notes
 
-Payment, shipping, fiscal, and email providers are intentionally stubbed in the MVP. The code is shaped so those integrations can be replaced by real adapters without changing the merchant UI.
+Payment, shipping, fiscal, and email providers remain pluggable in the MVP. The default payment provider is still mocked for local development, but Stripe/Mercado Pago/Pagar.me adapters are now available for staged rollout without changing checkout/dashboard UX.
 
 Additional planning material:
 
