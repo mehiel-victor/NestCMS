@@ -203,12 +203,27 @@ onMounted(load)
             <span class="status">{{ result.status }}</span>
           </div>
           <div class="metric-row">
+            <span>Pagamento</span>
+            <strong>{{ result.payment_status || 'pendente' }}</strong>
+          </div>
+          <div class="metric-row">
+            <span>Provedor</span>
+            <strong>{{ result.provider || 'mock' }}</strong>
+          </div>
+          <div class="metric-row">
             <span>Total</span>
             <strong>{{ currency(Number(result.total)) }}</strong>
           </div>
           <div class="metric-row">
             <span>Pagamento</span>
             <strong>{{ result.payment_method }}</strong>
+          </div>
+          <div v-if="result.payment_reference" class="metric-row">
+            <span>Referencia</span>
+            <strong>{{ result.payment_reference }}</strong>
+          </div>
+          <div v-if="result.payment_instructions" class="metric-note">
+            {{ typeof result.payment_instructions === 'string' ? result.payment_instructions : result.payment_instructions.instructions || result.payment_instructions.reference }}
           </div>
         </div>
         <div v-else class="notice">Aguardando pedido.</div>
