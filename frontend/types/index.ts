@@ -1,5 +1,22 @@
 export type Money = number
 
+export type UserRole = 'admin' | 'operator' | 'finance'
+
+export interface AuthUser {
+  id: number
+  email: string
+  role: UserRole
+}
+
+export interface SessionPayload {
+  user: AuthUser
+  access_token: string
+  refresh_token: string
+  access_expires_at: string
+  refresh_expires_at: string
+  session_id: string
+}
+
 export interface Variant {
   id: number
   product_id?: number

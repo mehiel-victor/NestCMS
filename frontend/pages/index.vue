@@ -3,6 +3,11 @@ import { RefreshCw } from '@lucide/vue'
 import { CButton } from '@chakra-ui/c-button'
 import type { AbandonedCart, Dashboard } from '~/types'
 
+definePageMeta({
+  requiresAuth: true,
+  allowedRoles: ['admin', 'operator', 'finance']
+})
+
 const api = useNestApi()
 const dashboard = ref<Dashboard | null>(null)
 const carts = ref<AbandonedCart[]>([])

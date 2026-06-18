@@ -11,6 +11,9 @@ services:
       - postgres-data:/var/lib/postgresql/data
       - ./backend/database/migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
       - ./backend/database/seed.sql:/docker-entrypoint-initdb.d/002_seed.sql:ro
+      - ./backend/database/migrations/002_payment_integration.sql:/docker-entrypoint-initdb.d/003_payment_integration.sql:ro
+      - ./backend/database/migrations/003_auth.sql:/docker-entrypoint-initdb.d/004_auth.sql:ro
+      - ./backend/database/seed_auth.sql:/docker-entrypoint-initdb.d/005_seed_auth.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nestcms} -d ${POSTGRES_DB:-nestcms}"]
       interval: 5s
@@ -47,4 +50,3 @@ services:
 
 volumes:
   postgres-data:
-

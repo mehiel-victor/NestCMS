@@ -1,5 +1,27 @@
 <script setup lang="ts">
-import { BarChart3, Package, ShoppingCart } from '@lucide/vue'
+import { computed, ref } from 'vue'
+import { BarChart3, LogOut, Package, ShoppingCart, UserCircle2 } from '@lucide/vue'
+import { CButton } from '@chakra-ui/c-button'
+
+const api = useNestApi()
+const session = useAuthSession()
+const isLoggingOut = ref(false)
+
+session.hydrate()
+
+const hasSession = computed(() => !!session.accessToken.value && !!session.user.value)
+const userEmail = computed(() => session.user.value?.email ?? '')
+const userRole = computed(() => session.user.value?.role ?? '')
+
+const logout = async () => {
+  isLoggingOut.value = true
+  try {
+    await api.logout()
+  } finally {
+    isLoggingOut.value = false
+    await navigateTo('/login')
+  }
+}
 </script>
 
 <template>
@@ -25,8 +47,22 @@ import { BarChart3, Package, ShoppingCart } from '@lucide/vue'
         </NuxtLink>
       </nav>
 
-      <p class="sidebar-foot">
-        MVP publico para marcas DTC: catalogo, estoque, pedidos, recuperacao e receita em um fluxo.
+      <div v-if="hasSession" class="sidebar-user">
+        <UserCircle2 :size="18" aria-hidden="true" />
+        <div>
+          <p class="sidebar-user-email">{{ userEmail }}</p>
+          <p class="sidebar-user-role">{{ userRole }}</p>
+        </div>
+        <CButton color-scheme="green" size="sm" :is-loading="isLoggingOut" @click="logout">
+          <span class="icon-label">
+            <LogOut :size="14" aria-hidden="true" />
+            Sair
+          </span>
+        </CButton>
+      </div>
+
+      <p v-else class="sidebar-foot">
+        <NuxtLink to="/login" class="login-link">Acessar painel</NuxtLink>
       </p>
     </aside>
 

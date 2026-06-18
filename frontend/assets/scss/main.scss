@@ -110,6 +110,35 @@ textarea {
   line-height: 1.5;
 }
 
+.sidebar-user {
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.sidebar-user p {
+  margin: 0;
+}
+
+.sidebar-user-email {
+  color: #f4fbf7;
+  font-size: 0.8rem;
+}
+
+.sidebar-user-role {
+  color: rgba(244, 251, 247, 0.74);
+  text-transform: capitalize;
+  font-size: 0.75rem;
+}
+
+.login-link {
+  color: #6fddbd;
+  font-weight: 700;
+}
+
 .main {
   min-width: 0;
   padding: 28px;
@@ -355,6 +384,88 @@ th {
   padding: 12px 14px;
 }
 
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+}
+
+.auth-card {
+  width: min(720px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.auth-eyebrow {
+  margin: 0;
+  color: var(--green);
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.auth-title {
+  margin: 6px 0 8px;
+  font-size: 1.8rem;
+}
+
+.auth-subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+.auth-form {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.auth-form label {
+  font-weight: 700;
+}
+
+.auth-input-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.auth-footnote {
+  margin: 8px 0 0;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.auth-callback {
+  text-align: center;
+}
+
+.auth-callback-state {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .error {
   border-color: #f0c8be;
   background: #fff0ed;
@@ -430,4 +541,3 @@ th {
     padding: 20px 16px;
   }
 }
-

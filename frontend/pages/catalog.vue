@@ -4,6 +4,11 @@ import { CButton } from '@chakra-ui/c-button'
 import { CInput } from '@chakra-ui/c-input'
 import type { Product } from '~/types'
 
+definePageMeta({
+  requiresAuth: true,
+  allowedRoles: ['admin', 'operator', 'finance']
+})
+
 const api = useNestApi()
 const products = ref<Product[]>([])
 const loading = ref(true)

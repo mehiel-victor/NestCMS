@@ -4,6 +4,10 @@ import { CButton } from '@chakra-ui/c-button'
 import { CInput } from '@chakra-ui/c-input'
 import type { Product, Variant } from '~/types'
 
+definePageMeta({
+  requiresAuth: false
+})
+
 const api = useNestApi()
 const { currency } = useFormatters()
 
@@ -47,7 +51,7 @@ const load = async () => {
   error.value = ''
 
   try {
-    products.value = await api.products()
+    products.value = await api.publicProducts()
     if (variants.value[0]) {
       form.variant_id = variants.value[0].id
     }
@@ -217,10 +221,6 @@ onMounted(load)
           <div class="metric-row">
             <span>Pagamento</span>
             <strong>{{ result.payment_method }}</strong>
-          </div>
-          <div v-if="result.payment_reference" class="metric-row">
-            <span>Referencia</span>
-            <strong>{{ result.payment_reference }}</strong>
           </div>
           <div v-if="result.payment_instructions" class="metric-note">
             {{ typeof result.payment_instructions === 'string' ? result.payment_instructions : result.payment_instructions.instructions || result.payment_instructions.reference }}
