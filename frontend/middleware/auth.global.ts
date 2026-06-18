@@ -44,4 +44,4 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (session.user.value && allowedRoles.length > 0 && !allowedRoles.includes(session.user.value.role)) {
     return navigateTo('/login?reason=forbidden')
   }
-}
+})
