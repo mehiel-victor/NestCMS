@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nuxt dev",
+    "dev": "nuxt build && nuxt preview",
+    "dev:nuxt": "nuxt dev",
     "build": "nuxt build",
     "preview": "nuxt preview",
     "typecheck": "nuxt typecheck"

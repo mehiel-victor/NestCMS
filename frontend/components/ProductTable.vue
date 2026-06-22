@@ -18,8 +18,8 @@ const visibilityClass = (visibility: string) => {
   <section class="panel">
     <div class="panel-header">
       <div>
-        <h2 class="panel-title">Catalogo</h2>
-        <p class="panel-kicker">Produtos, variantes, midias e margem.</p>
+        <h2 class="panel-title">Catalogo local</h2>
+        <p class="panel-kicker">Produtos demo, variantes, midias e margem.</p>
       </div>
       <span class="status">{{ products.length }} itens</span>
     </div>
@@ -36,7 +36,7 @@ const visibilityClass = (visibility: string) => {
             <th>Margem</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody v-if="products.length">
           <tr v-for="product in products" :key="product.id">
             <td>
               <strong>{{ product.title }}</strong>
@@ -55,6 +55,6 @@ const visibilityClass = (visibility: string) => {
         </tbody>
       </table>
     </div>
+    <div v-if="!products.length" class="notice">Nenhum produto demo cadastrado nesta sessao.</div>
   </section>
 </template>
-

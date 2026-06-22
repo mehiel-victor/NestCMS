@@ -1,37 +1,52 @@
 # NestCMS
 
-NestCMS is an open-source MVP for a DTC e-commerce CMS. It gives a founder like Maria one place to manage catalog, inventory, guest checkout, orders, abandoned carts, and revenue analytics.
+NestCMS is a frontend-only portfolio demo for DTC commerce operations. It shows how a founder like Maria could review catalog, inventory, checkout, orders, abandoned carts, and revenue analytics without requiring a hosted API, database, payment gateway, email provider, or shipping provider.
+
+All product data is seeded and simulated in the browser. Actions update local mock state by design.
+
+## Demo Scope
+
+- Demo profile access for admin, operator, and finance roles.
+- Catalog creation with SKU, visibility, stock, low-stock threshold, and duplicate SKU validation.
+- Public checkout simulation for published products only.
+- Simulated PIX, credit card, and boleto payment states and instructions.
+- Local order creation, operational status advancement, refund simulation, and chargeback simulation.
+- Abandoned-cart recovery simulation with visible local timestamp.
+- Dashboard KPIs and analytics derived from seeded and locally mutated mock state.
+- Browser-local persistence with an explicit reset action on the demo page.
+
+## Not Production Behavior
+
+NestCMS does not create real orders, payments, e-mails, shipments, invoices, webhooks, accounts, or external integrations. Card numbers and sensitive payment fields are never collected.
+
+The demo stores mock products, orders, and recovery actions in `localStorage` under the current browser. Use the reset action in `/demo` to restore the seeded state.
 
 ## Stack
 
-- Backend: PHP 8.3, PDO, PostgreSQL
-- Frontend: Nuxt 3, Vue 3, Vite, Chakra UI Vue, SCSS
-- Runtime: Docker Compose
-
-## MVP Scope
-
-- Product catalog with variants, media metadata, categories, collections, custom fields, and visibility.
-- Inventory by SKU and warehouse with low-stock alerts and movement history.
-- Guest checkout with provider-backed payment orchestration (PIX/card/boleto), coupons, shipping, upsell/cross-sell metadata, and stock decrement.
-- Order dashboard with status updates.
-- Abandoned cart recovery queue and simulated email events.
-- Revenue, funnel, best-seller, margin, LTV, and UTM analytics.
+- Nuxt 3
+- Vue 3
+- TypeScript
+- Chakra UI Vue
+- SCSS
+- Lucide icons
 
 ## Run Locally
 
-Docker is required for the full stack because PostgreSQL is provisioned by Compose.
-
 ```bash
-cp .env.example .env
-docker compose up --build
+cd frontend
+npm install
+npm run dev
 ```
 
-Then open:
+Then open the local Nuxt URL printed by the preview server, usually `http://localhost:3000`.
 
-- Frontend: http://localhost:3000
-- Backend health: http://localhost:8080/health
+`npm run dev` builds the frontend and serves a local preview. The raw `nuxt dev` command remains available as `npm run dev:nuxt` for framework-level debugging.
 
-Seeded access credentials:
+No `.env`, Docker, PostgreSQL, or backend process is required for the portfolio demo.
+
+## Demo Access
+
+Open `/demo` and choose a seeded profile, or use the manual login form.
 
 | Perfil | E-mail | Senha |
 | --- | --- | --- |
@@ -39,92 +54,18 @@ Seeded access credentials:
 | Operador | `operator@nestcms.test` | `Operator@123` |
 | Financeiro | `finance@nestcms.test` | `Finance@123` |
 
-PostgreSQL is seeded automatically on the first run. If you need a clean database:
+## Recommended Review Path
 
-```bash
-docker compose down -v
-docker compose up --build
-```
+1. Open `/demo` and enter with the admin profile.
+2. Review dashboard KPIs, low stock, recent orders, recovery queue, and analytics.
+3. Create a product in `/catalog`.
+4. Simulate checkout in `/checkout`.
+5. Confirm the new order and stock change on the dashboard.
+6. Simulate recovery, operational advancement, refund, or chargeback.
 
-## Useful API Calls
+## Product Docs
 
-```bash
-curl http://localhost:8080/api/dashboard
-curl http://localhost:8080/api/products
-curl http://localhost:8080/api/inventory/low-stock
-curl http://localhost:8080/api/orders
-curl http://localhost:8080/api/marketing/abandoned-carts
-curl http://localhost:8080/api/analytics/revenue
-```
-
-Payment gateway behavior is driven by `.env`:
-
-- `PAYMENT_PROVIDER`: active provider alias (`mock`, `stripe`, `mercado_pago`, `pagar_me`).
-- `PAYMENT_PROVIDER_FALLBACK`: ordered fallback providers for non-webhook operations.
-- `STRIPE_WEBHOOK_SECRET`, `MERCADO_PAGO_WEBHOOK_SECRET`, `PAGARME_WEBHOOK_SECRET`: optional webhook secrets.
-
-Create a product:
-
-```bash
-curl -X POST http://localhost:8080/api/products \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Kit Ritual da Manha",
-    "description": "Bundle para rotina DTC com produto fisico e guia digital.",
-    "product_type": "physical",
-    "visibility": "published",
-    "price": 149.90,
-    "category_id": 1,
-    "collection_id": 1,
-    "custom_fields": {"material": "algodao organico"},
-    "variants": [
-      {"sku": "KIT-RITUAL-P", "option_name": "Tamanho", "option_value": "P", "price": 149.90, "stock": 24, "low_stock_threshold": 8}
-    ]
-  }'
-```
-
-Create a checkout order:
-
-```bash
-curl -X POST http://localhost:8080/api/checkout \
-  -H "Content-Type: application/json" \
-  -d '{
-    "customer": {"name": "Ana Costa", "email": "ana@example.com"},
-    "items": [{"variant_id": 1, "quantity": 1}],
-    "payment_method": "pix",
-    "shipping_method": "standard",
-    "coupon_code": "WELCOME10",
-    "utm_source": "instagram"
-  }'
-```
-
-## GitHub
-
-Public repository: https://github.com/mehiel-victor/NestCMS
-
-## CI/CD
-
-GitHub Actions deploys the Nuxt frontend in `frontend/` to Vercel.
-
-- Pull requests create preview deployments.
-- Pushes to `main` create production deployments.
-- The workflow uses Vercel CLI `54.9.1` with `vercel build` and `vercel deploy --prebuilt`.
-
-Required GitHub Actions secrets are already expected by `.github/workflows/vercel.yml`:
-
-- `VERCEL_TOKEN`
-- `VERCEL_ORG_ID`
-- `VERCEL_PROJECT_ID`
-
-Set `NUXT_PUBLIC_API_BASE` in the Vercel project environment when the production API is hosted. Without that, the frontend falls back to `http://localhost:8080`.
-
-When the published frontend is opened from a public host and `NUXT_PUBLIC_API_BASE` is still the localhost fallback, NestCMS runs in frontend demo mode. Demo mode accepts the seeded credentials above and serves in-browser sample data so the Vercel deployment can be reviewed without a hosted backend API. Local development on `localhost` still calls the real API.
-
-## Notes
-
-Payment, shipping, fiscal, and email providers remain pluggable in the MVP. The default payment provider is still mocked for local development, but Stripe/Mercado Pago/Pagar.me adapters are now available for staged rollout without changing checkout/dashboard UX.
-
-Additional planning material:
-
-- [Discovery de Novas Integracoes](docs/discovery-novas-integracoes.md)
-- [Posicionamento de Competencias Complementares](docs/posicionamento-competencias-complementares.md)
+- [Frontend-only PRD](PRD.md)
+- [Mock commerce flows](docs/product/prd-mock-commerce-flows.md)
+- [Demo positioning and copy](docs/product/prd-demo-positioning.md)
+- [Frontend-only commerce demo](docs/product/prd-frontend-only-demo.md)

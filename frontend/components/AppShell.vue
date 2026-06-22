@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { BarChart3, LogOut, Package, ShoppingCart, UserCircle2 } from '@lucide/vue'
+import { BarChart3, Eye, LogOut, Package, ShoppingCart, UserCircle2 } from '@lucide/vue'
 import { CButton } from '@chakra-ui/c-button'
 
 const api = useNestApi()
@@ -33,6 +33,10 @@ const logout = async () => {
       </NuxtLink>
 
       <nav class="nav-list" aria-label="Principal">
+        <NuxtLink to="/demo" class="nav-link">
+          <Eye :size="18" aria-hidden="true" />
+          <span>Demo</span>
+        </NuxtLink>
         <NuxtLink to="/" class="nav-link">
           <BarChart3 :size="18" aria-hidden="true" />
           <span>Dashboard</span>
@@ -43,7 +47,7 @@ const logout = async () => {
         </NuxtLink>
         <NuxtLink to="/checkout" class="nav-link">
           <ShoppingCart :size="18" aria-hidden="true" />
-          <span>Checkout</span>
+          <span>Checkout demo</span>
         </NuxtLink>
       </nav>
 
@@ -62,7 +66,7 @@ const logout = async () => {
       </div>
 
       <p v-else class="sidebar-foot">
-        <NuxtLink to="/login" class="login-link">Acessar painel</NuxtLink>
+        <NuxtLink to="/login" class="login-link">Acessar demo</NuxtLink>
       </p>
     </aside>
 

@@ -33,7 +33,7 @@ const nextPath = computed(() => {
 
 onMounted(async () => {
   if (!token.value) {
-    error.value = 'Token de acesso ausente ou invalido.'
+    error.value = 'Token demo ausente ou invalido.'
     loading.value = false
     return
   }
@@ -53,17 +53,17 @@ onMounted(async () => {
 <template>
   <main class="auth-page">
     <section class="auth-card auth-callback">
-      <p class="auth-eyebrow">Autenticacao</p>
-      <h1 class="auth-title">Validando acesso</h1>
+      <p class="auth-eyebrow">Sessao demo</p>
+      <h1 class="auth-title">Validando acesso simulado</h1>
 
       <div v-if="loading" class="auth-callback-state">
         <Loader2 class="spin" :size="26" aria-hidden="true" />
-        <p>Validando seu token de acesso...</p>
+        <p>Validando token local da demo...</p>
       </div>
 
       <div v-else-if="success" class="auth-callback-state">
         <CircleCheck :size="28" aria-hidden="true" />
-        <p>Link validado. Direcionando para o painel...</p>
+        <p>Acesso demo validado. Direcionando para o painel...</p>
       </div>
 
       <div v-else class="auth-callback-state">

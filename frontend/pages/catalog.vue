@@ -18,7 +18,7 @@ const error = ref('')
 
 const form = reactive({
   title: 'Novo Bundle DTC',
-  description: 'Produto criado pelo MVP NestCMS.',
+  description: 'Produto criado na sessao demo do NestCMS.',
   product_type: 'physical',
   visibility: 'published',
   price: 149.9,
@@ -84,7 +84,7 @@ const createProduct = async () => {
       ]
     })
 
-    message.value = 'Produto criado e estoque inicial registrado.'
+    message.value = 'Produto criado na sessao demo e catalogo local atualizado.'
     await load()
   } catch (exception) {
     error.value = exception instanceof Error ? exception.message : 'Nao foi possivel criar o produto.'
@@ -100,10 +100,10 @@ onMounted(load)
   <AppShell>
     <div class="topbar">
       <div>
-        <p class="eyebrow">Catalogo</p>
+        <p class="eyebrow">Catalogo demo</p>
         <h1 class="page-title">Produtos e variantes</h1>
         <p class="page-subtitle">
-          Cadastro rapido com SKU, preco, visibilidade, margem, midia e estoque inicial.
+          Cadastro local com SKU, preco, visibilidade, margem, midia e estoque inicial. Rascunhos e agendados nao entram no checkout publico.
         </p>
       </div>
     </div>
@@ -112,8 +112,8 @@ onMounted(load)
       <section class="panel">
         <div class="panel-header">
           <div>
-            <h2 class="panel-title">Novo produto</h2>
-            <p class="panel-kicker">Fluxo enxuto para cadastrar uma oferta em poucos minutos.</p>
+            <h2 class="panel-title">Novo produto demo</h2>
+            <p class="panel-kicker">Cria uma oferta apenas no estado local do navegador.</p>
           </div>
           <Plus :size="20" aria-hidden="true" />
         </div>
@@ -183,7 +183,7 @@ onMounted(load)
             <CButton color-scheme="green" type="submit" :is-loading="saving">
               <span class="icon-label">
                 <Save :size="16" aria-hidden="true" />
-                Salvar
+                Criar demo
               </span>
             </CButton>
           </div>

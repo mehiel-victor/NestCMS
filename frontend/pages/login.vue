@@ -30,7 +30,7 @@ const requestedNextPath = computed(() => {
 const reason = computed(() => {
   const raw = route.query.reason
   if (raw === 'forbidden') {
-    return 'Seu usuário não tem acesso a esse caminho.'
+    return 'Este perfil demo nao tem acesso a esse caminho.'
   }
 
   return ''
@@ -62,10 +62,10 @@ onMounted(() => {
 <template>
   <main class="auth-page">
     <section class="auth-card">
-      <p class="auth-eyebrow">Painel seguro</p>
-      <h1 class="auth-title">Acessar Painel NestCMS</h1>
+      <p class="auth-eyebrow">Sessao demo</p>
+      <h1 class="auth-title">Acessar NestCMS</h1>
       <p class="auth-subtitle">
-        Entre com as credenciais cadastradas pelo seed do banco de dados.
+        Entre com um perfil seedado. A autenticacao e local e existe apenas para demonstrar papeis de acesso.
       </p>
 
       <p v-if="reason" class="notice error">{{ reason }}</p>
@@ -99,11 +99,11 @@ onMounted(() => {
         </div>
 
         <CButton type="submit" color-scheme="green" size="lg" :is-loading="loggingIn">
-          Entrar
+          Entrar na demo
         </CButton>
 
         <p class="auth-footnote">
-          Perfis disponiveis no seed: admin, operador e financeiro.
+          Perfis disponiveis: admin@nestcms.test, operator@nestcms.test e finance@nestcms.test.
         </p>
       </form>
     </section>

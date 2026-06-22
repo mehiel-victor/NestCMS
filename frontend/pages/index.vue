@@ -36,10 +36,10 @@ onMounted(load)
   <AppShell>
     <div class="topbar">
       <div>
-        <p class="eyebrow">Operacao DTC</p>
-        <h1 class="page-title">Painel da Maria</h1>
+        <p class="eyebrow">Operacao DTC simulada</p>
+        <h1 class="page-title">Painel demo da Maria</h1>
         <p class="page-subtitle">
-          Catalogo, pedidos, estoque, recuperacao e receita em uma rotina unica para vender sem depender de uma loja engessada.
+          Catalogo, pedidos, estoque, recuperacao e receita calculados a partir de dados mock persistidos neste navegador.
         </p>
       </div>
 
@@ -47,14 +47,14 @@ onMounted(load)
         <CButton color-scheme="green" :is-loading="loading" @click="load">
           <span class="icon-label">
             <RefreshCw :size="16" aria-hidden="true" />
-            Atualizar
+            Atualizar demo
           </span>
         </CButton>
       </div>
     </div>
 
     <div v-if="error" class="notice error">{{ error }}</div>
-    <div v-else-if="loading" class="notice">Carregando operacao...</div>
+    <div v-else-if="loading" class="notice">Carregando estado demo...</div>
 
     <div v-if="dashboard" class="grid">
       <KpiStrip :kpis="dashboard.kpis" />

@@ -144,6 +144,14 @@ textarea {
   padding: 28px;
 }
 
+.demo-page {
+  min-height: 100vh;
+  padding: 28px;
+  display: grid;
+  gap: 18px;
+  background: var(--paper);
+}
+
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -324,6 +332,15 @@ th {
   border-bottom: 0;
 }
 
+.metric-note {
+  border: 1px solid #d9eadf;
+  border-radius: 8px;
+  background: #f4fbf7;
+  color: var(--green-strong);
+  padding: 10px 12px;
+  line-height: 1.45;
+}
+
 .muted {
   color: var(--muted);
 }
@@ -374,6 +391,11 @@ th {
   justify-content: space-between;
   gap: 12px;
   margin-top: 16px;
+}
+
+.inline-margin {
+  margin-left: 8px;
+  margin-top: 6px;
 }
 
 .notice {
@@ -452,6 +474,77 @@ th {
   justify-items: center;
 }
 
+.demo-hero {
+  display: grid;
+  gap: 10px;
+}
+
+.demo-grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.quick-card {
+  display: grid;
+  gap: 10px;
+}
+
+.quick-card-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.quick-card-description,
+.quick-card-meta {
+  margin: 0;
+  color: var(--muted);
+}
+
+.quick-card-description {
+  min-height: 42px;
+}
+
+.quick-card-meta span {
+  color: var(--green-strong);
+}
+
+.demo-checklist {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.demo-link {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.demo-link strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.demo-link p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.demo-cta {
+  margin-top: 16px;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--green-strong);
+  font-weight: 700;
+}
+
 .spin {
   animation: spin 1s linear infinite;
 }
@@ -470,6 +563,12 @@ th {
   border-color: #f0c8be;
   background: #fff0ed;
   color: #8a2f21;
+}
+
+.success {
+  border-color: #bee7d8;
+  background: #ebf9f2;
+  color: #0a4f3d;
 }
 
 .chart-bars {
@@ -539,5 +638,9 @@ th {
 
   .sidebar {
     padding: 20px 16px;
+  }
+
+  .demo-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -7,29 +7,29 @@ const { currency, number, percent } = useFormatters()
 
 const items = computed(() => [
   {
-    label: 'Receita do mes',
+    label: 'Receita demo',
     value: currency(props.kpis?.month_revenue),
-    note: `${percent(props.kpis?.revenue_delta_percent)} vs. periodo anterior`
+    note: `${percent(props.kpis?.revenue_delta_percent)} amostra local`
   },
   {
-    label: 'Pedidos hoje',
+    label: 'Pedidos demo hoje',
     value: number(props.kpis?.orders_today),
     note: `${number(props.kpis?.total_orders)} pedidos totais`
   },
   {
     label: 'Ticket medio',
     value: currency(props.kpis?.average_order_value),
-    note: 'AOV operacional'
+    note: 'AOV da sessao'
   },
   {
     label: 'Conversao',
     value: percent(props.kpis?.conversion_rate),
-    note: 'visita para compra'
+    note: 'amostra simulada'
   },
   {
     label: 'Carrinhos',
     value: number(props.kpis?.abandoned_carts),
-    note: 'aptos para recuperacao'
+    note: 'aptos para simulacao'
   }
 ])
 </script>
@@ -43,4 +43,3 @@ const items = computed(() => [
     </article>
   </section>
 </template>
-

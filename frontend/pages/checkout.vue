@@ -46,7 +46,7 @@ const selectedVariant = computed(() => variants.value.find((variant) => variant.
 const totalPreview = computed(() => {
   const subtotal = Number(selectedVariant.value?.price || 0) * Number(form.quantity || 1)
   const discount = form.coupon_code === 'WELCOME10' ? subtotal * 0.1 : 0
-  const shipping = form.shipping_method === 'express' ? 29.9 : form.shipping_method === 'pickup' ? 0 : 18.9
+  const shipping = selectedVariant.value?.is_digital ? 0 : form.shipping_method === 'express' ? 29.9 : form.shipping_method === 'pickup' ? 0 : 18.9
   return Math.max(0, subtotal - discount + shipping)
 })
 
@@ -121,10 +121,10 @@ onMounted(load)
   <AppShell>
     <div class="topbar">
       <div>
-        <p class="eyebrow">Checkout</p>
-        <h1 class="page-title">Compra como visitante</h1>
+        <p class="eyebrow">Checkout demo</p>
+        <h1 class="page-title">Simular compra como visitante</h1>
         <p class="page-subtitle">
-          Checkout de uma pagina com metodo de pagamento simulado, cupom, frete e baixa de estoque.
+          Checkout de uma pagina com pagamento simulado, cupom, frete e baixa de estoque local. Nenhuma cobranca real e criada.
         </p>
       </div>
     </div>
@@ -133,8 +133,8 @@ onMounted(load)
       <section class="panel">
         <div class="panel-header">
           <div>
-            <h2 class="panel-title">Pedido</h2>
-            <p class="panel-kicker">Sem conta previa e com criacao de cliente pos-compra.</p>
+            <h2 class="panel-title">Pedido mock</h2>
+            <p class="panel-kicker">Sem conta previa e sem coleta de dados sensiveis.</p>
           </div>
           <ShoppingCart :size="20" aria-hidden="true" />
         </div>
@@ -157,6 +157,7 @@ onMounted(load)
                 {{ variant.product_title }} · {{ variant.sku }} · {{ currency(variant.price) }} · {{ variant.stock }} un.
               </option>
             </select>
+            <small v-if="!variants.length" class="muted">Nenhum produto publicado esta disponivel para checkout.</small>
           </div>
 
           <div class="field">
@@ -173,10 +174,8 @@ onMounted(load)
             <label for="payment">Pagamento</label>
             <select id="payment" v-model="form.payment_method">
               <option value="pix">PIX</option>
-              <option value="credit_card">Cartao de credito</option>
+              <option value="credit_card">Cartao de credito simulado</option>
               <option value="boleto">Boleto</option>
-              <option value="apple_pay">Apple Pay</option>
-              <option value="google_pay">Google Pay</option>
             </select>
           </div>
 
@@ -196,10 +195,10 @@ onMounted(load)
 
           <div class="split-actions full">
             <strong>Total previsto: {{ currency(totalPreview) }}</strong>
-            <CButton color-scheme="green" type="submit" :is-loading="placing" :disabled="loading">
+            <CButton color-scheme="green" type="submit" :is-loading="placing" :disabled="loading || !variants.length">
               <span class="icon-label">
                 <ShoppingCart :size="16" aria-hidden="true" />
-                Finalizar
+                Simular checkout
               </span>
             </CButton>
           </div>
@@ -209,8 +208,8 @@ onMounted(load)
       <section class="panel">
         <div class="panel-header">
           <div>
-            <h2 class="panel-title">Resultado</h2>
-            <p class="panel-kicker">Pedido criado e estoque atualizado.</p>
+            <h2 class="panel-title">Resultado simulado</h2>
+            <p class="panel-kicker">Pedido mock criado e estoque local atualizado.</p>
           </div>
         </div>
 
@@ -221,16 +220,16 @@ onMounted(load)
             <strong>#{{ result.order_id }}</strong>
           </div>
           <div class="metric-row">
-            <span>Status</span>
+            <span>Status operacional</span>
             <span class="status">{{ result.status }}</span>
           </div>
           <div class="metric-row">
-            <span>Pagamento</span>
+            <span>Pagamento simulado</span>
             <strong>{{ result.payment_status || 'pendente' }}</strong>
           </div>
           <div class="metric-row">
-            <span>Provedor</span>
-            <strong>{{ result.provider || 'mock' }}</strong>
+            <span>Provedor mock</span>
+            <strong>{{ result.payment_provider || 'mock' }}</strong>
           </div>
           <div class="metric-row">
             <span>Total</span>
@@ -244,7 +243,7 @@ onMounted(load)
             {{ paymentInstructions }}
           </div>
         </div>
-        <div v-else class="notice">Aguardando pedido.</div>
+        <div v-else class="notice">Aguardando uma simulacao de checkout.</div>
       </section>
     </div>
   </AppShell>

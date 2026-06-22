@@ -1,22 +1,15 @@
 export default defineNuxtConfig({
   ssr: false,
+  compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
-  experimental: {
-    appManifest: false
-  },
   css: ['~/assets/scss/main.scss'],
-  runtimeConfig: {
-    public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080'
-    }
-  },
   app: {
     head: {
-      title: 'NestCMS',
+      title: 'NestCMS Portfolio Demo',
       meta: [
         {
           name: 'description',
-          content: 'Commerce CMS MVP for DTC brands'
+          content: 'Frontend-only commerce operations portfolio demo with local mock state.'
         }
       ]
     }

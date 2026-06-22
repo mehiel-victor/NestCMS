@@ -7,7 +7,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
     to.meta?.requiresAuth === false ||
     to.path === '/login' ||
     to.path === '/auth/callback' ||
-    to.path.startsWith('/checkout')
+    to.path.startsWith('/checkout') ||
+    to.path.startsWith('/demo')
 
   if (isPublic || to.path.startsWith('/api')) {
     return

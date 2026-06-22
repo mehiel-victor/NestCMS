@@ -19,8 +19,8 @@ const maxRevenue = computed(() => {
   <section class="panel">
     <div class="panel-header">
       <div>
-        <h2 class="panel-title">Receita e trafego</h2>
-        <p class="panel-kicker">Serie diaria, origem e produtos que puxam margem.</p>
+        <h2 class="panel-title">Receita e trafego mock</h2>
+        <p class="panel-kicker">Serie diaria, origem e produtos calculados da sessao demo.</p>
       </div>
     </div>
 

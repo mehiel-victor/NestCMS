@@ -15,6 +15,8 @@ const api = useNestApi()
 const { currency, shortDate } = useFormatters()
 const updating = ref<number | null>(null)
 const reviewing = ref<number | null>(null)
+const refunding = ref<number | null>(null)
+const error = ref('')
 
 const statuses = ['received', 'processing', 'shipped', 'delivered', 'returned']
 
@@ -25,6 +27,7 @@ const nextStatus = (status: string) => {
 
 const submitChargeback = async (order: Order) => {
   reviewing.value = order.id
+  error.value = ''
   try {
     await api.submitPaymentReview(order.id, {
       actor: 'operator',
@@ -32,8 +35,26 @@ const submitChargeback = async (order: Order) => {
       risk_level: 'high'
     })
     emit('refresh')
+  } catch (exception) {
+    error.value = exception instanceof Error ? exception.message : 'Nao foi possivel simular chargeback.'
   } finally {
     reviewing.value = null
+  }
+}
+
+const submitRefund = async (order: Order) => {
+  refunding.value = order.id
+  error.value = ''
+  try {
+    await api.createPaymentRefund(order.id, {
+      amount: order.total,
+      reason: 'demo_refund'
+    })
+    emit('refresh')
+  } catch (exception) {
+    error.value = exception instanceof Error ? exception.message : 'Nao foi possivel simular reembolso.'
+  } finally {
+    refunding.value = null
   }
 }
 
@@ -41,9 +62,12 @@ const advance = async (order: Order) => {
   const next = nextStatus(order.status)
   if (next === order.status) return
   updating.value = order.id
+  error.value = ''
   try {
     await api.updateOrderStatus(order.id, next)
     emit('refresh')
+  } catch (exception) {
+    error.value = exception instanceof Error ? exception.message : 'Nao foi possivel simular avanco do pedido.'
   } finally {
     updating.value = null
   }
@@ -54,11 +78,13 @@ const advance = async (order: Order) => {
   <section class="panel">
     <div class="panel-header">
       <div>
-        <h2 class="panel-title">Pedidos</h2>
-        <p class="panel-kicker">Fluxo recebido, processamento, envio, entrega e devolucao.</p>
+        <h2 class="panel-title">Pedidos demo</h2>
+        <p class="panel-kicker">Status operacional separado do status financeiro simulado.</p>
       </div>
       <span class="status">{{ props.orders.length }} recentes</span>
     </div>
+
+    <div v-if="error" class="notice error">{{ error }}</div>
 
     <div class="table-wrap">
       <table>
@@ -74,7 +100,7 @@ const advance = async (order: Order) => {
           <th></th>
         </tr>
         </thead>
-        <tbody>
+        <tbody v-if="props.orders.length">
         <tr v-for="order in props.orders" :key="order.id">
           <td>
             <strong>#{{ order.id }} · {{ order.customer_name }}</strong>
@@ -99,8 +125,18 @@ const advance = async (order: Order) => {
               >
                 <span class="icon-label">
                   <RefreshCw :size="15" aria-hidden="true" />
-                  Avancar
+                  Simular avanco
                 </span>
+              </CButton>
+              <CButton
+                v-if="order.payment_status !== 'partially_refunded' && order.payment_status !== 'refunded' && order.payment_status !== 'chargeback'"
+                size="sm"
+                color-scheme="orange"
+                class="inline-margin"
+                :is-loading="refunding === order.id"
+                @click="submitRefund(order)"
+              >
+                <span class="icon-label">Simular reembolso</span>
               </CButton>
               <CButton
                 v-if="order.payment_status !== 'chargeback'"
@@ -110,12 +146,13 @@ const advance = async (order: Order) => {
                 :is-loading="reviewing === order.id"
                 @click="submitChargeback(order)"
               >
-                <span class="icon-label">Registrar chargeback</span>
+                <span class="icon-label">Simular chargeback</span>
               </CButton>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+    <div v-if="!props.orders.length" class="notice">Nenhum pedido demo foi criado nesta sessao.</div>
   </section>
 </template>

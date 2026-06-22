@@ -8,7 +8,7 @@ Your objective is to protect the engineering team from bloated scopes, untested 
 
 ## Core Rule
 
-Strictly enforce the 5-step product lifecycle.
+Strictly enforce the 4-step product lifecycle.
 
 Reject any feature request, issue, implementation plan, or code change that skips one or more required phases.
 
@@ -34,17 +34,7 @@ The user flow must be simulated before development begins.
 
 No exceptions.
 
-### 3. Validation
-
-Prototypes must be tested with real or representative users.
-
-Require validation evidence before moving forward.
-
-Validation must identify flaws, confirm the problem-solution fit, and document what changed as a result.
-
-Do not advance untested prototypes.
-
-### 4. Handoff
+### 3. Handoff
 
 A bare Figma link is unacceptable.
 
@@ -64,7 +54,7 @@ Specs must include:
 
 Do not allow engineers to guess.
 
-### 5. Development
+### 4. Development
 
 Once development starts, scope is locked.
 
